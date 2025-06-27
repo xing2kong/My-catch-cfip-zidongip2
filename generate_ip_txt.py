@@ -1,6 +1,3 @@
-当然可以！下面是一个**精简后的 generate_ip_txt.py 脚本**，保留核心功能（含 UA），去除调试打印，仅输出 IP.TXT：
-
-```python name=generate_ip_txt.py
 import os
 import base64
 import requests
@@ -85,7 +82,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-```
-
-这个版本适合直接在本地或 GitHub Actions 运行。  
-如需更精简或自定义输出格式，随时告诉我！
