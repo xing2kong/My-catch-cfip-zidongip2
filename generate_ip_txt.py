@@ -1,8 +1,6 @@
 import os
-import base64
 import requests
-import json
-from urllib.parse import urlparse, unquote, parse_qs
+from urllib.parse import urlparse, unquote
 
 SUBSCRIBE_URL = os.environ.get("SUBSCRIBE_URL")
 if not SUBSCRIBE_URL:
@@ -11,76 +9,31 @@ if not SUBSCRIBE_URL:
 
 print(f"Using SUBSCRIBE_URL: {SUBSCRIBE_URL}")
 
-def parse_vmess(line):
-    try:
-        json_str = base64.b64decode(line[8:] + "=" * (-len(line[8:]) % 4)).decode()
-        node = json.loads(json_str)
-        remark = node.get("ps", "")
-        address = node.get("add", "")
-        port = node.get("port", "")
-        return f"{address}:{port}#{remark}"
-    except Exception as e:
-        print(f"Error parsing vmess: {e}")
-        return None
-
-def parse_vless(line):
-    try:
-        # vless://uuid@host:port?params#remark
-        url = urlparse(line)
-        address = url.hostname
-        port = url.port
-        remark = unquote(url.fragment) if url.fragment else ""
-        return f"{address}:{port}#{remark}"
-    except Exception as e:
-        print(f"Error parsing vless: {e}")
-        return None
-
-def parse_trojan(line):
-    try:
-        # trojan://password@host:port?params#remark
-        url = urlparse(line)
-        address = url.hostname
-        port = url.port
-        remark = unquote(url.fragment) if url.fragment else ""
-        return f"{address}:{port}#{remark}"
-    except Exception as e:
-        print(f"Error parsing trojan: {e}")
-        return None
-
-def parse_ss(line):
-    try:
-        # ss://base64-encode(method:password)@host:port#remark
-        url = urlparse(line)
-        address = url.hostname
-        port = url.port
-        remark = unquote(url.fragment) if url.fragment else ""
-        return f"{address}:{port}#{remark}"
-    except Exception as e:
-        print(f"Error parsing ss: {e}")
-        return None
+def parse_node(line):
+    if line.startswith("vmess://") or line.startswith("vless://") or line.startswith("trojan://") or line.startswith("ss://"):
+        # 解析主机和端口
+        try:
+            url = urlparse(line)
+            address = url.hostname
+            port = url.port
+            remark = unquote(url.fragment) if url.fragment else ""
+            return f"{address}:{port}#{remark}"
+        except Exception as e:
+            print(f"Error parsing: {e}")
+            return None
+    return None
 
 def main():
     resp = requests.get(SUBSCRIBE_URL, timeout=10)
-    resp.raise_for_status()
-    content = base64.b64decode(resp.content).decode(errors='ignore')
-    print("==== 解码后内容前10行 ====")
+    content = resp.text
+    print("==== 订阅内容前10行 ====")
     for i, line in enumerate(content.splitlines()[:10]):
         print(f"{i+1}: {line}")
     lines = content.splitlines()
-    print(f"Total lines in decoded content: {len(lines)}")
-    print(f"Total lines in decoded content: {len(lines)}")
+    print(f"Total lines: {len(lines)}")
     result = []
     for line in lines:
-        if line.startswith("vmess://"):
-            info = parse_vmess(line)
-        elif line.startswith("vless://"):
-            info = parse_vless(line)
-        elif line.startswith("trojan://"):
-            info = parse_trojan(line)
-        elif line.startswith("ss://"):
-            info = parse_ss(line)
-        else:
-            info = None
+        info = parse_node(line.strip())
         if info:
             print(f"Parsed node: {info}")
             result.append(info)
