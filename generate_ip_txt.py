@@ -3,6 +3,7 @@ import base64
 import requests
 import json
 from urllib.parse import urlparse, unquote
+from datetime import datetime
 
 SUBSCRIBE_URL = os.environ.get("SUBSCRIBE_URL")
 if not SUBSCRIBE_URL:
@@ -78,6 +79,9 @@ def main():
         if info:
             result.append(info)
     with open("ip.txt", "w", encoding="utf-8") as f:
+        # 写入当前时间，格式可以根据需要调整
+        f.write(f"# Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        # 然后写入后续的内容（假设是 ip_list）
         f.write("\n".join(result))
 
 if __name__ == "__main__":
