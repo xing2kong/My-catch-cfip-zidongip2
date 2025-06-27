@@ -1,3 +1,6 @@
+当然可以！下面是一个**精简后的 generate_ip_txt.py 脚本**，保留核心功能（含 UA），去除调试打印，仅输出 IP.TXT：
+
+```python name=generate_ip_txt.py
 import os
 import base64
 import requests
@@ -9,10 +12,8 @@ if not SUBSCRIBE_URL:
     print("No SUBSCRIBE_URL found in environment variables.")
     exit(1)
 
-print(f"Using SUBSCRIBE_URL: {SUBSCRIBE_URL}")
-
 headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+    "User-Agent": "clash"
 }
 
 def parse_vmess(line):
@@ -23,8 +24,7 @@ def parse_vmess(line):
         port = node.get("port", "")
         remark = node.get("ps", "")
         return f"{address}:{port}#{remark}"
-    except Exception as e:
-        print(f"Error parsing vmess: {e}")
+    except Exception:
         return None
 
 def parse_vless(line):
@@ -34,8 +34,7 @@ def parse_vless(line):
         port = url.port
         remark = unquote(url.fragment) if url.fragment else ""
         return f"{address}:{port}#{remark}"
-    except Exception as e:
-        print(f"Error parsing vless: {e}")
+    except Exception:
         return None
 
 def parse_trojan(line):
@@ -45,8 +44,7 @@ def parse_trojan(line):
         port = url.port
         remark = unquote(url.fragment) if url.fragment else ""
         return f"{address}:{port}#{remark}"
-    except Exception as e:
-        print(f"Error parsing trojan: {e}")
+    except Exception:
         return None
 
 def parse_ss(line):
@@ -56,46 +54,38 @@ def parse_ss(line):
         port = url.port
         remark = unquote(url.fragment) if url.fragment else ""
         return f"{address}:{port}#{remark}"
-    except Exception as e:
-        print(f"Error parsing ss: {e}")
+    except Exception:
         return None
 
 def main():
+    resp = requests.get(SUBSCRIBE_URL, headers=headers, timeout=10)
+    raw_content = resp.content
     try:
-        resp = requests.get(SUBSCRIBE_URL, headers=headers, timeout=10)
-        raw_content = resp.content
-        try:
-            decoded = base64.b64decode(raw_content + b"=" * (-len(raw_content) % 4)).decode('utf-8', errors='ignore')
-        except Exception as e:
-            print(f"Base64 decode failed: {e}")
-            decoded = raw_content.decode('utf-8', errors='ignore')
-        print("==== 解码后内容前10行 ====")
-        for i, line in enumerate(decoded.splitlines()[:10]):
-            print(f"{i+1}: {line}")
-        lines = decoded.splitlines()
-        print(f"Total lines: {len(lines)}")
-        result = []
-        for line in lines:
-            line = line.strip()
-            if line.startswith("vmess://"):
-                info = parse_vmess(line)
-            elif line.startswith("vless://"):
-                info = parse_vless(line)
-            elif line.startswith("trojan://"):
-                info = parse_trojan(line)
-            elif line.startswith("ss://"):
-                info = parse_ss(line)
-            else:
-                info = None
-            if info:
-                print(f"Parsed node: {info}")
-                result.append(info)
-        if not result:
-            print("No valid nodes found.")
-        with open("IP.TXT", "w", encoding="utf-8") as f:
-            f.write("\n".join(result))
-    except Exception as e:
-        print(f"Failed to fetch or process subscribe url: {e}")
+        decoded = base64.b64decode(raw_content + b"=" * (-len(raw_content) % 4)).decode('utf-8', errors='ignore')
+    except Exception:
+        decoded = raw_content.decode('utf-8', errors='ignore')
+    lines = decoded.splitlines()
+    result = []
+    for line in lines:
+        line = line.strip()
+        if line.startswith("vmess://"):
+            info = parse_vmess(line)
+        elif line.startswith("vless://"):
+            info = parse_vless(line)
+        elif line.startswith("trojan://"):
+            info = parse_trojan(line)
+        elif line.startswith("ss://"):
+            info = parse_ss(line)
+        else:
+            info = None
+        if info:
+            result.append(info)
+    with open("IP.TXT", "w", encoding="utf-8") as f:
+        f.write("\n".join(result))
 
 if __name__ == "__main__":
     main()
+```
+
+这个版本适合直接在本地或 GitHub Actions 运行。  
+如需更精简或自定义输出格式，随时告诉我！
