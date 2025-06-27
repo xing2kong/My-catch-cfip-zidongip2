@@ -62,11 +62,11 @@ def parse_ss(line):
 def main():
     resp = requests.get(SUBSCRIBE_URL, timeout=10)
     resp.raise_for_status()
-    content = base64.b64decode(resp.content).decode(errors='ignore')
-    print("==== 解码后内容前10行 ====")
-    for i, line in enumerate(content.splitlines()[:10]):
+content = base64.b64decode(resp.content).decode(errors='ignore')
+print("==== 解码后内容前10行 ====")
+for i, line in enumerate(content.splitlines()[:10]):
     print(f"{i+1}: {line}")
-    lines = content.splitlines()
+lines = content.splitlines()
     print(f"Total lines in decoded content: {len(lines)}")
     result = []
     for line in lines:
