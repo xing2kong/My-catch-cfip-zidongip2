@@ -77,7 +77,7 @@ def main():
             info = None
         if info:
             result.append(info)
-    with open("IP.TXT", "w", encoding="utf-8") as f:
+    with open("ip.txt", "w", encoding="utf-8") as f:
         f.write("\n".join(result))
 
 if __name__ == "__main__":
