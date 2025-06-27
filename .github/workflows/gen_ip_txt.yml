@@ -36,8 +36,8 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          if [[ -n "$(git status --porcelain IP.TXT)" ]]; then
-            git add IP.TXT
+          if [[ -n "$(git status --porcelain ip.txt)" ]]; then
+            git add ip.txt
             git commit -m 'Auto update IP.TXT'
             git pull --rebase origin ${{ github.ref_name }}
             git push
