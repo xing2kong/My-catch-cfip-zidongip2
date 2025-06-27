@@ -2,8 +2,15 @@ name: Generate IP.TXT from v2rayN Subscribe
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # 每6小时运行一次
+    - cron: '0 */6 * * *'
   workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -32,5 +39,6 @@ jobs:
           if [[ -n "$(git status --porcelain IP.TXT)" ]]; then
             git add IP.TXT
             git commit -m 'Auto update IP.TXT'
+            git pull --rebase origin ${{ github.ref_name }}
             git push
           fi
