@@ -1,5 +1,7 @@
 import os
+import base64
 import requests
+import json
 from urllib.parse import urlparse, unquote
 
 SUBSCRIBE_URL = os.environ.get("SUBSCRIBE_URL")
@@ -9,31 +11,79 @@ if not SUBSCRIBE_URL:
 
 print(f"Using SUBSCRIBE_URL: {SUBSCRIBE_URL}")
 
-def parse_node(line):
-    if line.startswith("vmess://") or line.startswith("vless://") or line.startswith("trojan://") or line.startswith("ss://"):
-        # 解析主机和端口
-        try:
-            url = urlparse(line)
-            address = url.hostname
-            port = url.port
-            remark = unquote(url.fragment) if url.fragment else ""
-            return f"{address}:{port}#{remark}"
-        except Exception as e:
-            print(f"Error parsing: {e}")
-            return None
-    return None
+def parse_vmess(line):
+    try:
+        # vmess://{base64}
+        data = base64.b64decode(line[8:] + "=" * (-len(line[8:]) % 4)).decode('utf-8')
+        node = json.loads(data)
+        address = node.get("add", "")
+        port = node.get("port", "")
+        remark = node.get("ps", "")
+        return f"{address}:{port}#{remark}"
+    except Exception as e:
+        print(f"Error parsing vmess: {e}")
+        return None
+
+def parse_vless(line):
+    try:
+        url = urlparse(line)
+        address = url.hostname
+        port = url.port
+        remark = unquote(url.fragment) if url.fragment else ""
+        return f"{address}:{port}#{remark}"
+    except Exception as e:
+        print(f"Error parsing vless: {e}")
+        return None
+
+def parse_trojan(line):
+    try:
+        url = urlparse(line)
+        address = url.hostname
+        port = url.port
+        remark = unquote(url.fragment) if url.fragment else ""
+        return f"{address}:{port}#{remark}"
+    except Exception as e:
+        print(f"Error parsing trojan: {e}")
+        return None
+
+def parse_ss(line):
+    try:
+        url = urlparse(line)
+        address = url.hostname
+        port = url.port
+        remark = unquote(url.fragment) if url.fragment else ""
+        return f"{address}:{port}#{remark}"
+    except Exception as e:
+        print(f"Error parsing ss: {e}")
+        return None
 
 def main():
     resp = requests.get(SUBSCRIBE_URL, timeout=10)
-    content = resp.text
-    print("==== 订阅内容前10行 ====")
-    for i, line in enumerate(content.splitlines()[:10]):
+    # base64解码
+    raw_content = resp.content
+    try:
+        decoded = base64.b64decode(raw_content + b"=" * (-len(raw_content) % 4)).decode('utf-8', errors='ignore')
+    except Exception as e:
+        print(f"Base64 decode failed: {e}")
+        return
+    print("==== 解码后内容前10行 ====")
+    for i, line in enumerate(decoded.splitlines()[:10]):
         print(f"{i+1}: {line}")
-    lines = content.splitlines()
+    lines = decoded.splitlines()
     print(f"Total lines: {len(lines)}")
     result = []
     for line in lines:
-        info = parse_node(line.strip())
+        line = line.strip()
+        if line.startswith("vmess://"):
+            info = parse_vmess(line)
+        elif line.startswith("vless://"):
+            info = parse_vless(line)
+        elif line.startswith("trojan://"):
+            info = parse_trojan(line)
+        elif line.startswith("ss://"):
+            info = parse_ss(line)
+        else:
+            info = None
         if info:
             print(f"Parsed node: {info}")
             result.append(info)
