@@ -4,6 +4,7 @@ import requests
 import json
 from urllib.parse import urlparse, unquote
 from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 SUBSCRIBE_URL = os.environ.get("SUBSCRIBE_URL")
 if not SUBSCRIBE_URL:
@@ -80,8 +81,10 @@ def main():
             result.append(info)
     with open("ip.txt", "w", encoding="utf-8") as f:
         # 写入当前时间，格式可以根据需要调整
-        f.write(f"127.0.0.1:1234#采集时间{datetime.now().strftime('%y-%m-%d-%H-%M')}\n")
-        # 然后写入后续的内容（假设是 ip_list）
+        with open("ip.txt", "w", encoding="utf-8") as f:
+        beijing_time = datetime.utcnow() + timedelta(hours=8)
+        now_str = beijing_time.strftime('%Y.%m.%d.%H.%M.%S')
+        f.write(f"127.0.0.1:1234#采集时间{now_str}\n")
         f.write("\n".join(result))
 
 if __name__ == "__main__":
