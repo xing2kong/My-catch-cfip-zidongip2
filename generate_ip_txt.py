@@ -81,7 +81,6 @@ def main():
             result.append(info)
     with open("ip.txt", "w", encoding="utf-8") as f:
         # 写入当前时间，格式可以根据需要调整
-        with open("ip.txt", "w", encoding="utf-8") as f:
         beijing_time = datetime.utcnow() + timedelta(hours=8)
         now_str = beijing_time.strftime('%Y.%m.%d.%H.%M.%S')
         f.write(f"127.0.0.1:1234#采集时间{now_str}\n")
