@@ -80,7 +80,7 @@ def main():
             result.append(info)
     with open("ip.txt", "w", encoding="utf-8") as f:
         # 写入当前时间，格式可以根据需要调整
-        f.write(f"{datetime.now().strftime('%y.%m.%d.%H:%M')}#采集时间\n")
+        f.write(f"127.0.0.1:1234#采集时间{datetime.now().strftime('%y-%m-%d-%H-%M')}\n")
         # 然后写入后续的内容（假设是 ip_list）
         f.write("\n".join(result))
 
