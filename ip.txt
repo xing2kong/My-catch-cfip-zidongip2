@@ -1,4 +1,4 @@
-# Generated on 2025-06-27 07:14:00
+25.06.27.07:29#采集时间
 cf-cname.xingpingcn.top:2096#CF
 cf.chinam.eu.org:2096#CF
 101.42.10.90:443#CN
